@@ -49,6 +49,7 @@ class _TabsScreenState extends State<TabsScreen> {
               Icons.location_pin,
               color: Theme.of(context).primaryColor,
             ),
+            SizedBox(width: 8),
             Text(
               '48 Tố Hữu, Trung Văn, Từ Liêm, Hà Nội',
             ),

@@ -2,6 +2,9 @@ import 'package:chamcong_app/widgets/home_page/registerOT.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import 'package:chamcong_app/providers/auth.dart';
+import 'package:provider/provider.dart';
+
 class HomeAction extends StatelessWidget {
   final DateTime dateTime = DateTime.now();
 
@@ -13,6 +16,8 @@ class HomeAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dataAccount = Provider.of<Auth>(context).getAccount;
+    print(dataAccount);
     return Container(
       padding: EdgeInsets.all(16),
       child: Column(
@@ -49,7 +54,7 @@ class HomeAction extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Nguyễn Thị Văn Bill',
+                              dataAccount['full_name'],
                               style: TextStyle(fontSize: Theme.of(context).textTheme.headline2?.fontSize, fontWeight: Theme.of(context).textTheme.headline2?.fontWeight, color: Color(0xFF2577C9),),
                             ),
                             SizedBox(
