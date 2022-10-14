@@ -1,5 +1,10 @@
+import 'package:chamcong_app/providers/api.dart';
+import 'package:chamcong_app/providers/location.dart';
+import 'package:chamcong_app/providers/time_work.dart';
 import 'package:chamcong_app/widgets/home_page/registerOT.dart';
+import 'package:chamcong_app/widgets/noti.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 import 'package:chamcong_app/providers/auth.dart';
@@ -8,16 +13,78 @@ import 'package:provider/provider.dart';
 class HomeAction extends StatelessWidget {
   final DateTime dateTime = DateTime.now();
 
-  // void showDialogRegister () {
-  //   showDialog(context: context, builder: (_) {
-      
-  //   });
-  // }
+  Future<XFile?> _takePicture() async {
+    print(1);
+    final ImagePicker _picker = await ImagePicker();
+    final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
+    return photo;
+  }
+
+  Widget buildCheckButton(BuildContext context, String typeCheck, Widget content) {
+    return ElevatedButton(
+      onPressed: () {
+        Provider.of<Location>(context, listen: false)
+            .getLocation()
+            .then((value) {
+          print(value);
+          _takePicture().then(
+            (img) {
+              Provider.of<TimeWork>(
+                context,
+                listen: false,
+              ).HandleCreateTimeWork(
+                img!,
+                value.latitude,
+                value.longitude,
+                typeCheck,
+                Provider.of<API>(context, listen: false).apiDistance,
+                Provider.of<API>(context, listen: false).getHeader(Provider.of<Auth>(
+                  context,
+                  listen: false,
+                ).token),
+              ).then((value) {
+                print(value);
+                showDialog(context: context, builder: (BuildContext context) {
+                  if (value['status'] == 400) {
+                    return Noti('Địa điểm chấm công không trùng với địa điểm đã khai báo 😱 ¯\_(ツ)_/¯', 'warning');
+                  } else {
+                    return Noti('Bạn đã đăng ký OT thành công 😎', 'success');
+                  }
+                });
+              });
+            },
+          );
+        });
+      },
+      style: ElevatedButton.styleFrom(
+          padding: EdgeInsets.all(0),
+          elevation: 0,
+          backgroundColor: Colors.white,
+          side: BorderSide(style: BorderStyle.none),
+          shape: RoundedRectangleBorder()),
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.only(
+          top: 16,
+          bottom: 16,
+        ),
+        decoration: BoxDecoration(
+          border: Border(
+              bottom: BorderSide(
+                color: Color(0xFFD9DCE0),
+              ),
+              right: typeCheck == 'checkin' ? BorderSide(
+                color: Color(0xFFD9DCE0),
+              ) : BorderSide.none),
+        ),
+        child: content,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final dataAccount = Provider.of<Auth>(context).getAccount;
-    print(dataAccount);
     return Container(
       padding: EdgeInsets.all(16),
       child: Column(
@@ -40,11 +107,14 @@ class HomeAction extends StatelessWidget {
                   child: Row(
                     children: [
                       Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                         margin: EdgeInsets.only(right: 16),
                         width: 48,
                         height: 48,
-                        child: Image.asset(
-                          'assets/images/imgUserDefault.png',
+                        child: Image.network(
+                          dataAccount['avatar_file_media'],
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -55,7 +125,17 @@ class HomeAction extends StatelessWidget {
                           children: [
                             Text(
                               dataAccount['full_name'],
-                              style: TextStyle(fontSize: Theme.of(context).textTheme.headline2?.fontSize, fontWeight: Theme.of(context).textTheme.headline2?.fontWeight, color: Color(0xFF2577C9),),
+                              style: TextStyle(
+                                fontSize: Theme.of(context)
+                                    .textTheme
+                                    .headline2
+                                    ?.fontSize,
+                                fontWeight: Theme.of(context)
+                                    .textTheme
+                                    .headline2
+                                    ?.fontWeight,
+                                color: Color(0xFF2577C9),
+                              ),
                             ),
                             SizedBox(
                               height: 4,
@@ -112,87 +192,59 @@ class HomeAction extends StatelessWidget {
                         children: [
                           Expanded(
                             flex: 1,
-                            child: Container(
-                              padding: EdgeInsets.only(
-                                top: 16,
-                                bottom: 16,
-                              ),
-                              decoration: BoxDecoration(
-                                border: Border(
-                                    bottom: BorderSide(
-                                      color: Color(0xFFD9DCE0),
-                                    ),
-                                    right: BorderSide(
-                                      color: Color(0xFFD9DCE0),
-                                    )),
-                              ),
-                              child: Column(
-                                children: [
-                                  Icon(
-                                    Icons.login,
+                            child: buildCheckButton(context, 'checkin', Column(
+                              children: [
+                                Icon(
+                                  Icons.login,
+                                  color: Color(0xFF1AB65C),
+                                ),
+                                SizedBox(
+                                  height: 4,
+                                ),
+                                Text(
+                                  'Check-in',
+                                  style: TextStyle(
                                     color: Color(0xFF1AB65C),
+                                    fontSize: Theme.of(context)
+                                        .textTheme
+                                        .headline2
+                                        ?.fontSize,
+                                    fontWeight: Theme.of(context)
+                                        .textTheme
+                                        .headline2
+                                        ?.fontWeight,
                                   ),
-                                  SizedBox(
-                                    height: 4,
-                                  ),
-                                  Text(
-                                    'Check-in',
-                                    style: TextStyle(
-                                      color: Color(0xFF1AB65C),
-                                      fontSize: Theme.of(context)
-                                          .textTheme
-                                          .headline2
-                                          ?.fontSize,
-                                      fontWeight: Theme.of(context)
-                                          .textTheme
-                                          .headline2
-                                          ?.fontWeight,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                                ),
+                              ],
+                            ),),
                           ),
                           Expanded(
                             flex: 1,
-                            child: Container(
-                              padding: EdgeInsets.only(
-                                top: 16,
-                                bottom: 16,
-                              ),
-                              decoration: BoxDecoration(
-                                border: Border(
-                                  bottom: BorderSide(
-                                    color: Color(0xFFD9DCE0),
-                                  ),
+                            child: buildCheckButton(context, 'checkout', Column(
+                              children: [
+                                Icon(
+                                  Icons.logout,
+                                  color: Color(0xFFD92B6A),
                                 ),
-                              ),
-                              child: Column(
-                                children: [
-                                  Icon(
-                                    Icons.logout,
+                                SizedBox(
+                                  height: 4,
+                                ),
+                                Text(
+                                  'Check-out',
+                                  style: TextStyle(
                                     color: Color(0xFFD92B6A),
+                                    fontSize: Theme.of(context)
+                                        .textTheme
+                                        .headline2
+                                        ?.fontSize,
+                                    fontWeight: Theme.of(context)
+                                        .textTheme
+                                        .headline2
+                                        ?.fontWeight,
                                   ),
-                                  SizedBox(
-                                    height: 4,
-                                  ),
-                                  Text(
-                                    'Check-out',
-                                    style: TextStyle(
-                                      color: Color(0xFFD92B6A),
-                                      fontSize: Theme.of(context)
-                                          .textTheme
-                                          .headline2
-                                          ?.fontSize,
-                                      fontWeight: Theme.of(context)
-                                          .textTheme
-                                          .headline2
-                                          ?.fontWeight,
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ),
+                                )
+                              ],
+                            ),),
                           ),
                         ],
                       ),
@@ -208,14 +260,16 @@ class HomeAction extends StatelessWidget {
                               decoration: BoxDecoration(
                                 border: Border(
                                     right: BorderSide(
-                                      color: Color(0xFFD9DCE0),
-                                    )),
+                                  color: Color(0xFFD9DCE0),
+                                )),
                               ),
                               child: TextButton(
                                 onPressed: () {
-                                  showDialog(context: context, builder: (_) {
-                                    return RegisterOT();
-                                  });
+                                  showDialog(
+                                      context: context,
+                                      builder: (_) {
+                                        return RegisterOT();
+                                      });
                                 },
                                 child: Column(
                                   children: [

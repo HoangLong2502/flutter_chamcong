@@ -1,5 +1,7 @@
 import 'package:chamcong_app/providers/api.dart';
 import 'package:chamcong_app/providers/auth.dart';
+import 'package:chamcong_app/providers/location.dart';
+import 'package:chamcong_app/providers/time_work.dart';
 import 'package:chamcong_app/screens/auth_screen.dart';
 import 'package:chamcong_app/screens/tabs_screen.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +18,8 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (context) => Auth()),
         ChangeNotifierProvider(create: (context) => API()),
+        ChangeNotifierProvider(create: (context) => Location()),
+        ChangeNotifierProvider(create: (context) => TimeWork()),
       ],
       child: Consumer<Auth>(builder: (context, auth, child) {
         return MaterialApp(
