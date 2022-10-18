@@ -1,6 +1,10 @@
+import 'package:chamcong_app/providers/auth.dart';
+import 'package:chamcong_app/providers/time_ot.dart';
+import 'package:chamcong_app/providers/users.dart';
+import 'package:chamcong_app/widgets/noti.dart';
 import 'package:flutter/material.dart';
-
-const List _userAssigne = ['Trần Thế Anh', 'Lê Bá Hoàng Long'];
+import 'package:flutter_svg/svg.dart';
+import 'package:provider/provider.dart';
 
 class RegisterOT extends StatefulWidget {
   @override
@@ -8,16 +12,37 @@ class RegisterOT extends StatefulWidget {
 }
 
 class _RegisterOTState extends State<RegisterOT> {
-  final List _listReason = [
-    'Hoàn thành công việc trong dự án',
-    'Hỗ trợ nhân sự phòng ban khác',
-    'Công việc văn phòng',
-    'Họp nội bộ',
-    'Có lịch họp với khách hàng',
-    'Lý do khác',
+  final List<Map<String, dynamic>> _listReason = [
+    {
+      'checked': false,
+      'reason': 'Hoàn thành công việc trong dự án',
+    },
+    {
+      'checked': false,
+      'reason': 'Hỗ trợ nhân sự phòng ban khác',
+    },
+    {
+      'checked': false,
+      'reason': 'Công việc văn phòng',
+    },
+    {
+      'checked': false,
+      'reason': 'Họp nội bộ',
+    },
+    {
+      'checked': false,
+      'reason': 'Có lịch họp với khách hàng',
+    },
+    {
+      'checked': false,
+      'reason': 'Lý do khác',
+    },
   ];
+  List _userAssigne = [];
 
-  String userAssignSelect = _userAssigne[1].toString();
+  String _reasonSelect = '';
+
+  String _userAssignSelect = '0';
 
   bool isChecked = false;
 
@@ -36,6 +61,17 @@ class _RegisterOTState extends State<RegisterOT> {
         return;
       }
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    Provider.of<Users>(context).getAllAccount().then((value) {
+      setState(() {
+        _userAssigne = value;
+        _userAssignSelect = value[0]['id'].toString();
+      });
+    });
+    super.didChangeDependencies();
   }
 
   @override
@@ -92,19 +128,25 @@ class _RegisterOTState extends State<RegisterOT> {
                         child: Row(
                           children: [
                             Checkbox(
-                              value: isChecked,
+                              value: e['checked'],
                               fillColor:
                                   MaterialStateProperty.resolveWith(getColor),
                               checkColor: Colors.white,
                               onChanged: (bool? value) {
+                                _listReason.forEach((element) {
+                                  setState(() {
+                                    element['checked'] = false;
+                                  });
+                                });
                                 setState(() {
-                                  isChecked = value!;
+                                  e['checked'] = value!;
+                                  _reasonSelect = e['reason'];
                                 });
                               },
                             ),
                             Container(
                               child: Text(
-                                '${e}',
+                                '${e['reason']}',
                                 style: Theme.of(context).textTheme.headline5,
                               ),
                             ),
@@ -173,18 +215,20 @@ class _RegisterOTState extends State<RegisterOT> {
                   ),
                   SizedBox(height: 4),
                   Card(
+                    elevation: 0,
                     child: DropdownButtonFormField(
-                      value: userAssignSelect,
+                      menuMaxHeight: 300,
+                      value: _userAssignSelect,
                       items: _userAssigne.map((item) {
                         return DropdownMenuItem<String>(
-                          value: item,
-                          child: Text(item),
+                          value: item['id'].toString(),
+                          child: Text(item['full_name']),
                         );
                       }).toList(),
                       onChanged: ((String? value) {
                         setState(
                           () {
-                            userAssignSelect = value!;
+                            _userAssignSelect = value!;
                           },
                         );
                       }),
@@ -262,13 +306,75 @@ class _RegisterOTState extends State<RegisterOT> {
                           ),
                         ),
                         onPressed: () {
-                          Navigator.pop(context);
+                          showDialog(
+                            context: context,
+                            builder: (context) => Noti(
+                              'Đang tạo đơn OT!, vui lòng đợi ^.^',
+                              'warning',
+                            ),
+                          );
+                          Provider.of<TimeOT>(context, listen: false)
+                              .handleCreateTimeOT(
+                            {
+                              'cause': 3,
+                              'title': _reasonSelect,
+                              'user_assign': _userAssignSelect,
+                              'user_created':
+                                  Provider.of<Auth>(context, listen: false)
+                                      .getAccount['id'],
+                            },
+                          ).then((_) {
+                            Navigator.pop(context);
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                icon:  SvgPicture.asset('assets/svgs/notiSuccess.svg'),
+                                title: Text(
+                                  'Thông báo',
+                                  style: Theme.of(context).textTheme.headline1,
+                                ),
+                                content: Text(
+                                  'Bạn đã đăng ký OT thành công 😎 (◉ω◉)',
+                                  style: TextStyle(
+                                    fontSize: Theme.of(context).textTheme.headline5!.fontSize,
+                                    fontWeight: Theme.of(context).textTheme.headline5!.fontWeight,
+                                    color: Colors.grey,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                actions: [
+                                  Center(
+                                    child: OutlinedButton(
+                                      style: OutlinedButton.styleFrom(
+                                          padding: EdgeInsets.symmetric(horizontal: 34, vertical: 16),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                          )),
+                                      onPressed: () {
+                                        Provider.of<Auth>(context, listen: false).setErrLogin('');
+                                        Navigator.of(context).pop();
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: Text(
+                                        'Đóng',
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            );
+                          });
                         },
                         child: Text(
                           'Hoàn thành',
                           style: TextStyle(
-                            fontSize: Theme.of(context).textTheme.headline3?.fontSize,
-                            fontWeight: Theme.of(context).textTheme.headline3?.fontWeight,
+                            fontSize:
+                                Theme.of(context).textTheme.headline3?.fontSize,
+                            fontWeight: Theme.of(context)
+                                .textTheme
+                                .headline3
+                                ?.fontWeight,
                             color: Colors.white,
                           ),
                         ),

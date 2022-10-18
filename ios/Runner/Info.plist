@@ -14,6 +14,10 @@
 	<string>your usage description here</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>your usage description here</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_dartobservatory._tcp</string>
+	</array>
 	<key>CFBundleDisplayName</key>
 	<string>Chamcong App</string>
 	<key>CFBundleExecutable</key>

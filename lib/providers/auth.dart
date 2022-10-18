@@ -4,7 +4,26 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class Auth with ChangeNotifier {
+  // Token
   var token;
+
+  // List Api
+  final String apiLogin = 'https://api.chamcong.co/login/';
+  final String apiTimework = 'https://api.chamcong.co/v1/api/timework/';
+  final String apiDistance = 'https://api.chamcong.co/v1/api/distance/';
+  final String apiAllAccount = 'https://api.chamcong.co/getchoiceaccount';
+  final String apiTimebreak = 'https://api.chamcong.co/v1/api/timebreak/';
+  final String apiTimeOT = 'https://api.chamcong.co/v1/api/ot/';
+
+  // Header
+  Map<String, String> getHeader() {
+    return {
+      "Content-type": "application/json; charset=utf-8",
+      "Accept": "application/json; charset=utf-8",
+      "Authorization" : "Token " + token,
+    };
+  }
+
   Map<String, dynamic> _account = {};
   var _isAuth = false;
   var errLogin = '';

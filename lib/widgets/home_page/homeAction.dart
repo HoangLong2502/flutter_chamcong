@@ -1,6 +1,7 @@
 import 'package:chamcong_app/providers/api.dart';
 import 'package:chamcong_app/providers/location.dart';
 import 'package:chamcong_app/providers/time_work.dart';
+import 'package:chamcong_app/screens/timebreak_screen.dart';
 import 'package:chamcong_app/widgets/home_page/registerOT.dart';
 import 'package:chamcong_app/widgets/noti.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +17,7 @@ class HomeAction extends StatelessWidget {
   Future<XFile?> _takePicture() async {
     print(1);
     final ImagePicker _picker = await ImagePicker();
-    final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
+    final XFile? photo = await _picker.pickImage(source: ImageSource.camera, maxHeight: 100, maxWidth: 100, imageQuality: 1);
     return photo;
   }
 
@@ -43,7 +44,6 @@ class HomeAction extends StatelessWidget {
                   listen: false,
                 ).token),
               ).then((value) {
-                print(value);
                 showDialog(context: context, builder: (BuildContext context) {
                   if (value['status'] == 400) {
                     return Noti('Địa điểm chấm công không trùng với địa điểm đã khai báo 😱 ¯\_(ツ)_/¯', 'warning');
@@ -51,6 +51,8 @@ class HomeAction extends StatelessWidget {
                     return Noti('Bạn đã đăng ký OT thành công 😎', 'success');
                   }
                 });
+              }).catchError((err) {
+                print(err);
               });
             },
           );
@@ -301,35 +303,40 @@ class HomeAction extends StatelessWidget {
                           ),
                           Expanded(
                             flex: 1,
-                            child: Container(
-                              padding: EdgeInsets.only(
-                                top: 16,
-                                bottom: 16,
-                              ),
-                              child: Column(
-                                children: [
-                                  Icon(
-                                    Icons.sick,
-                                    color: Color(0xFF303439),
-                                  ),
-                                  SizedBox(
-                                    height: 4,
-                                  ),
-                                  Text(
-                                    'Xin nghỉ',
-                                    style: TextStyle(
+                            child: InkWell (
+                              onTap: () {
+                                Navigator.of(context).pushNamed(TimeBreakScreen.routeName);
+                              },
+                              child: Container(
+                                padding: EdgeInsets.only(
+                                  top: 16,
+                                  bottom: 16,
+                                ),
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      Icons.sick,
                                       color: Color(0xFF303439),
-                                      fontSize: Theme.of(context)
-                                          .textTheme
-                                          .headline2
-                                          ?.fontSize,
-                                      fontWeight: Theme.of(context)
-                                          .textTheme
-                                          .headline2
-                                          ?.fontWeight,
                                     ),
-                                  )
-                                ],
+                                    SizedBox(
+                                      height: 4,
+                                    ),
+                                    Text(
+                                      'Xin nghỉ',
+                                      style: TextStyle(
+                                        color: Color(0xFF303439),
+                                        fontSize: Theme.of(context)
+                                            .textTheme
+                                            .headline2
+                                            ?.fontSize,
+                                        fontWeight: Theme.of(context)
+                                            .textTheme
+                                            .headline2
+                                            ?.fontWeight,
+                                      ),
+                                    )
+                                  ],
+                                ),
                               ),
                             ),
                           ),
